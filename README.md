@@ -1,7 +1,7 @@
 # Welcome to CS201 🤓 
 
 #### Class Location & Times
-🏫 Data Sceicne Center, Tredtin Hall, Monday, Wednesday & Friday | 11:30 - 12:20 
+🏫 Data Sceicne Center, Tredtin Hall, Monday, Wednesday & Friday | 11:30–12:20 
 
 #### Office Hours
 
