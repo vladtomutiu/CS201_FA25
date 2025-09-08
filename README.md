@@ -49,4 +49,19 @@
 | 12/1–12/5  | Final Presentations |  |
 | 12/8–12/12  | Final Project Materials Due Thursday, 12/11 at **5:30pm** |
 
-  
+## 💪 Stretch Menu
+
+Finished early? Want to explore more?  
+Check out our Stretch Menu for optional challenges and ideas to deepen your learning all semester long.
+
+- 💻 **Coding practice:** try solving problems multiple ways, write your own functions, and explore new R tools
+- 📊 **Visualization challenges:** make new plots, customize themes, or go beyond the plots we are doing in class (e.g., `plotly`)
+- 🧰 **Package exploration:** install and try packages beyond class (e.g., `lubridate` or `stringr`)
+- 🔗 **Git/GitHub power moves:** write better commit messages, try branching, open issues or pull requests
+- 🤝 **Community engagement:** help your neighbor, share datasets or code snippets, or demo your solution in class
+- 🧠 **Data curiosity:** explore new datasets, calculate new statistics, write mini-reports
+- 🏆 **Going beyond:** create dashboards or Quarto websites, contribute to open source, or connect what you learn to your major
+
+These are **optional** but highly encouraged!  
+Use them to practice, get creative, and challenge yourself while helping make our class more collaborative.
+
