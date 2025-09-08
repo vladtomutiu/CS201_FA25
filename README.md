@@ -5,7 +5,7 @@
 
 #### Office Hours
 
-🕥 Mondays 2:20–4:30
+🕥 Mondays 2:30–4:30
 
 🕥 Tuesdays 1:30–2:30 
 
@@ -23,6 +23,10 @@
 
 **Install R, RStudio, and Git**  
    Follow the [installation guide](<link-to-guide-or-PDF>) before our first class. Stop **before** the "How to accept and submit assignments" section (don't do anything below that section).
+
+## 📚 Free Online Textbook
+
+[R for Data Science (2e)](https://r4ds.hadley.nz)
 
 ## Course Schedule
 
