@@ -1,4 +1,4 @@
-# Welcome to CS201 🌱 
+# Welcome to CS201 🤓 
 
 #### Class Location & Times
 🏫 Data Sceicne Center, Tredtin Hall, Monday, Wednesday & Friday | 11:30 - 12:20 
@@ -18,6 +18,11 @@
 - Chatting about the theory behind the code
 - Help building your personal website in R
 - Chatting about opportunities in data science
+
+## 🛠️ Getting Started
+
+**Install R, RStudio, and Git**  
+   Follow the [installation guide](<link-to-guide-or-PDF>) before our first class. Stop **before** the "How to accept and submit assignments" section (don't do anything below that section).
 
 ## Course Schedule
 
