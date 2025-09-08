@@ -1,0 +1,165 @@
+---
+title: "CS201 - Introduction & Getting Started with R & RStudio"
+subtitle: "GitHub, warm-up, and a first look at mtcars"
+author: "Amber Camp"
+date: "2025-09-08"
+format: html
+editor: visual
+---
+
+## Welcome Back!
+
+-   Quick check-in: Who still needs help getting R, RStudio, and Git installed?
+-   Plan for today:
+    -   Revisit: R vs. RStudio
+    -   Git vs GitHub & why we care
+    -   Base R vs. tidyverse (conceptual only)
+    -   Play with `mtcars`
+
+------------------------------------------------------------------------
+
+## R vs. RStudio
+
+What is the difference between R and RStudio and why do you need to have both for this class?
+
+-   **R** is the programming language and engine
+-   **RStudio** is the IDE (workspace) that makes using R easier
+-   You *can* run R without RStudio, but you probably wouldn’t want to (ask me how I know)
+
+------------------------------------------------------------------------
+
+## Git vs. GitHub
+
+Similarly, remember that Git and GitHub are *not the same thing*.
+
+-   **Git**: Tracks changes to your code locally on your computer
+-   **GitHub**: Hosts your Git repositories online for sharing, backup, and collaboration
+-   Together: You can track your work + share it with others
+
+------------------------------------------------------------------------
+
+## Extra Credit Question
+
+Who was able to figure out why `0.1 + 0.1 + 0.1 - 0.3 ≠ 0`?
+
+Try it!
+
+```{r}
+0.1 + 0.1 + 0.1 - 0.3
+0.3 - 0.1 - 0.1 - 0.1 # a variation
+
+# run this if you want to avoid scientific notation
+options(scipen = 999)
+```
+
+Explanation:
+
+-   
+
+------------------------------------------------------------------------
+
+# Let's get started!
+
+## Install & Load packages
+
+This gives you access to packages/libraries, which are like custom/specialized tools so that you can do more with R.
+
+```{r}
+# install.packages("tidyverse")
+library(tidyverse)
+```
+
+## Quick note on Base R vs. `tidyverse`
+
+-   **Base R**: built-in functions, available immediately
+-   **`tidyverse`**: collection of modern packages with consistent syntax
+-   **`tidyverse`** is considered the modern way to interact with R, and this will be our focus
+
+### Example
+
+Both of the following create a table from the dataset `mtcars` with columns for `mpg` and `hp`, filtering for 6 cylinder models and `mpg` \> 20.
+
+**Base R:**
+
+```{r}
+mtcars[mtcars$cyl == 6 & mtcars$mpg > 20, c("mpg", "hp")]
+```
+
+**tidyverse:**
+
+```{r}
+mtcars %>%
+  filter(cyl == 6, mpg > 20) %>%
+  select(mpg, hp)
+```
+
+-   Base R uses bracket notation and logical conditions
+-   `tidyverse` uses verbs like (`filter()`, `select()`) chained with pipes for readability
+-   Base R powerful and always available. `tidyverse` makes code more expressive and human-readable, especially for multi-step data wrangling (it's often easier to use!)
+
+------------------------------------------------------------------------
+
+## First Look: `mtcars`
+
+`mtcars` is a classic, built-in dataset. If you've used R before, you've probably interacted with `mtcars`.
+
+Start by exploring the data below. It's always good to ensure you understand what is contained in your dataset.
+
+```{r}
+data(mtcars) # reads in the data & adds it to your environment as a dataframe
+View(mtcars) # opens up the datafram for viewing
+head(mtcars) # displays the top few lines of the dataframe
+summary(mtcars) # displays a summary of all variables
+?mtcars # will open up documentation in your Help tab. works for packages, functions, too!
+```
+
+-   How many rows and columns are in the dataframe?
+-   What variables look interesting?
+-   How might you view the last few rows of the dataframe with a single function?
+
+------------------------------------------------------------------------
+
+### Quick Questions
+
+-   What is the average `mpg` overall?
+
+```{r}
+mean(mtcars$mpg) # the $ helps you select a specific column of interest
+```
+
+-   Can you find the mean of another variable?
+
+```{r}
+
+```
+
+-   Can you find the median?
+
+```{r}
+
+```
+
+------------------------------------------------------------------------
+
+### Quick Plot
+
+We are using *Base R* here, and it works fine! Going forward, we'll use a packaged called `ggplot2`.
+
+```{r}
+# this is a scatterplot of mpg by wt
+plot(mtcars$wt, mtcars$mpg,
+     xlab = "Weight (1000 lbs)", ylab = "MPG",
+     main = "Heavier cars tend to have lower MPG")
+```
+
+------------------------------------------------------------------------
+
+## Exit Ticket
+
+Create a scatterplot of two variables of your choice (but not `mpg` vs. `wt`). Feel free to try a `ggplot2` version if you have some R experience!
+
+```{r}
+
+```
+
+Save, stage, commit, and push to GitHub!!
