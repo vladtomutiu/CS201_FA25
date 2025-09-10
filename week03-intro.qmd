@@ -107,15 +107,23 @@ Start by exploring the data below. It's always good to ensure you understand wha
 
 ```{r}
 data(mtcars) # reads in the data & adds it to your environment as a dataframe
+
+mtcars_new <- mtcars %>% 
+  rownames_to_column("model")
+
 View(mtcars) # opens up the datafram for viewing
-head(mtcars) # displays the top few lines of the dataframe
+head(mtcars, 10) # displays the top few lines of the dataframe
 summary(mtcars) # displays a summary of all variables
 ?mtcars # will open up documentation in your Help tab. works for packages, functions, too!
+tail(mtcars)
 ```
 
 -   How many rows and columns are in the dataframe?
+-   answer: 32 rows and 12 columns
 -   What variables look interesting?
+-   answer: vs and am, since it is short for engine and transmission
 -   How might you view the last few rows of the dataframe with a single function?
+-   answer: tail(mtcars)
 
 ------------------------------------------------------------------------
 
@@ -124,19 +132,19 @@ summary(mtcars) # displays a summary of all variables
 -   What is the average `mpg` overall?
 
 ```{r}
-mean(mtcars$mpg) # the $ helps you select a specific column of interest
+mean(mtcars$mpg) # the $ helps you select a specific column/variable of interest
 ```
 
 -   Can you find the mean of another variable?
 
 ```{r}
-
+mean(mtcars$qsec)
 ```
 
 -   Can you find the median?
 
 ```{r}
-
+median(mtcars$qsec)
 ```
 
 ------------------------------------------------------------------------
@@ -156,10 +164,19 @@ plot(mtcars$wt, mtcars$mpg,
 
 ## Exit Ticket
 
-Create a scatterplot of two variables of your choice (but not `mpg` vs. `wt`). Feel free to try a `ggplot2` version if you have some R experience!
+Create a scatter plot, histogram, and boxplot of two variables of your choice (but not `mpg` vs. `wt`). Feel free to try a `ggplot2` version if you have some R experience!
 
 ```{r}
+plot(mtcars$qsec, mtcars$cyl, 
+  xlab = "1/4 mile time", ylab = "number of cylinders",
+     main = "the more cylinders there are the faster the 1/4 mile time")
 
+hist(mtcars$qsec,
+     xlab = "1/4 mile time", ylab = "count")
+
+boxplot(mtcars$qsec, mtcars$cyl, 
+        xlab = "1/4 mile time", ylab = "number of cylinders",
+     main = "the more cylinders there are the faster the 1/4 mile time")
 ```
 
 Save, stage, commit, and push to GitHub!!
