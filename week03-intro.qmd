@@ -177,6 +177,7 @@ hist(mtcars$qsec,
 boxplot(mtcars$qsec, mtcars$cyl, 
         xlab = "1/4 mile time", ylab = "number of cylinders",
      main = "the more cylinders there are the faster the 1/4 mile time")
+summary(mtcars$qsec)
 ```
 
 Save, stage, commit, and push to GitHub!!
