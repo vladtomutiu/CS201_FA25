@@ -10,7 +10,7 @@ editor: visual
 ## Welcome Back!
 
 -   Quick check-in: Who still needs help getting R, RStudio, and Git installed?
--   Plan for today:
+-   Plan for today: work
     -   Revisit: R vs. RStudio
     -   Git vs GitHub & why we care
     -   Base R vs. tidyverse (conceptual only)
