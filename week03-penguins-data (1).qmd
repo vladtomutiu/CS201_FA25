@@ -1,0 +1,299 @@
+---
+title: "Analyzing Penguins Data"
+author: "Connor Flynn & Amber Camp"
+date: 9/12/25
+format: html
+editor: visual
+---
+
+# Diving into Penguins Data
+
+## Loading Libraries
+
+```{r, message=FALSE}
+# install.packages("here") # makes for easier filepath management
+# install.packages("palmerpenguins") # cool penguins data for exploration
+# install.packages("janitor") # facilitates data cleaning and exploration
+# install.packages("skimr") # gives us neat summaries to skim
+# install.packages("plotly") # interactive visualizations!
+
+library(tidyverse) # tidyverse is a collection that includes tidyr, dplyr, ggplot2, and more!
+library(here)
+library(palmerpenguins)
+library(janitor)
+library(plotly)
+```
+
+![](https://allisonhorst.github.io/palmerpenguins/logo.png){width="15%"}
+
+## Reading in Data w/ [palmerpenguins](https://allisonhorst.github.io/palmerpenguins/articles/intro.html)
+
+There are multiple options to read data into R
+
+1.  Data download (manual click) -\> Move into project "data" folder -\> read_csv()
+2.  Sometimes data is included in packages
+    -   In this case, the penguins data we are going to analyze is included in the palmerpenguins package.
+3.  Download via a URL
+
+### Option 1
+
+```{r, message=FALSE}
+penguins_data <- read_csv("data/penguins_lter.csv")
+```
+
+### Option 2
+
+```{r, message=FALSE}
+penguins_data_from_package <- palmerpenguins::penguins
+```
+
+```{r, message=FALSE}
+raw_penguins_data_from_package <- palmerpenguins::penguins_raw
+```
+
+### Option 3
+
+```{r, message=FALSE}
+url_adelie <- "https://pasta.lternet.edu/package/data/eml/knb-lter-pal/219/3/002f3893385f710df69eeebe893144ff"
+
+adelie_data_from_url <- read_csv(url_adelie)
+```
+
+Note that all of these methods of reading data in to R are *reproducible* meaning that this script should work for anyone using the appropriate steps.
+
+## Exercise 1
+
+-   Notice that the data we read in with the link is only for Adélie penguins (Adélie species). Can you use this link below to read in the data for the Gentoo penguins?
+
+    -   Here is the link to the Gentoo data: [`https://pasta.lternet.edu/package/data/eml/knb-lter-pal/220/3/e03b43c924f226486f2f0ab6709d2381`](https://pasta.lternet.edu/package/data/eml/knb-lter-pal/220/3/e03b43c924f226486f2f0ab6709d2381)
+
+    -   Make sure to create a descriptive object name
+
+```{r, message=FALSE}
+
+url_gentoo <- "https://pasta.lternet.edu/package/data/eml/knb-lter-pal/219/3/002f3893385f710df69eeebe893144ff"
+
+gentoo_data_from_url <- read_csv(url_gentoo)
+```
+
+#### A Little Data Cleaning
+
+Let's focus on the dataframe `penguins_data` for learning purposes
+
+-   If you click on the dataframe in your environment you'll notice the space in the column names, ex. `Culmen Length (mm)`
+
+    -   Having spaces in column names often causes headaches, R doesn't like it, so we always avoid spaces
+
+    -   Two common naming conventions are Snake Case and Camel Case
+
+        -   Snake Case example: culmen_length_mm
+
+        -   Camel Case example: culmenLengthMm
+
+    -   There are other options!
+
+![by Allison Horst](https://cdn.myportfolio.com/45214904-6a61-4e23-98d6-b140f8654a40/dbb99049-2916-4bc8-824f-1816f5c4f06d_rw_3840.png?h=5c28a07483856cd07de35a50c772824d){fig-align="center"}
+
+Lets start by cleaning one column name manually, so you can appreciate the `janitor` package's efficiency
+
+First, with Base R
+
+```{r, message=FALSE}
+names(penguins_data)[names(penguins_data) == "Culmen Length (mm)"] <- "culmen_length_mm"
+```
+
+Second, with the dplyr package
+
+```{r, message=FALSE}
+penguins_data <- penguins_data %>% 
+  rename(individual_id = "Individual ID")
+```
+
+We are lucky our penguins dataframe only has 17 columns, but oftentimes dataframes can have many more. So manually cleaning column names is highly inefficient (but doable!). Here's where the `janitor` package's `clean_names()` function comes to the rescue!
+
+```{r, message=FALSE}
+penguins_data <- penguins_data %>% 
+  clean_names()
+```
+
+Awesome, now all of our column names are clean and our dataframe is ready for analysis! snake_case is the default, but others (like camelCase) are available. See documentation.
+
+## Exploratory Analysis
+
+The `skim()` function from the `skimr` package gives us a cool overview of the data with one line of code
+
+```{r, message=FALSE}
+summary(penguins_data)
+head(penguins_data)
+
+skimr::skim(penguins_data)
+```
+
+## Exercise 2
+
+What other packages/functions do a similar thing?
+
+-   Try a good ol' Google search: "R package to get in depth description of dataframe"
+
+    -   How about a Chat GPT search?
+
+-   Type your answer(s) in bullet points below
+
+    -   google search:
+
+    -   Hmisc
+
+    -   summarytools
+
+    -   skimr
+
+    -   DataExplorer
+
+    -   funModeling
+
+-   Let's check out `DataExplorer`
+
+    ```{r, message=FALSE}
+    library(DataExplorer)
+    introduce(penguins_data)
+    plot_intro(penguins_data)
+    ```
+
+-   We'll leave the rest for you to explore individually on your own time.
+
+## Data Visualization
+
+`ggplot2` is the most common package used for data visualization in R!
+
+Let's start with the most basic plot we can make. Note that the **package** is `ggplot2` and the **function** we use is `ggplot`.
+
+```{r, message=FALSE}
+ggplot(data = penguins_data, aes(x = flipper_length_mm)) +
+  geom_histogram()
+
+```
+
+Cool! What if we color the histogram by species
+
+```{r, message=FALSE}
+ggplot(data = penguins_data, aes(x = flipper_length_mm, fill = species)) +
+  geom_histogram()
+
+```
+
+Interesting! Seems like flipper length is very dependent on species of penguin
+
+The magic of `ggplot2` is simplicity and *customization* so let's customize, based on these colors:
+
+![](https://allisonhorst.github.io/palmerpenguins/reference/figures/lter_penguins.png){fig-align="center" width="50%"}
+
+```{r, message=FALSE}
+ggplot(data = penguins_data, aes(x = flipper_length_mm, fill = species)) +
+  geom_histogram(alpha = 0.3) + # alpha adds transparency
+  theme_bw() +
+  scale_fill_manual(values = c("darkorange","darkorchid","cyan4")) +
+  labs(title = "Palmer Penguins, Distribution of Flipper Length",
+       subtitle = "3 penguin species observed on three islands in the Palmer Archipelago, Antarctica",
+       x = "Flipper Length (mm)",
+       y = "Number of Penguins")
+  
+```
+
+Manually choosing colors is cool, but there are also color palettes available for us with `viridis`
+
+```{r, message=FALSE}
+ggplot(data = penguins_data, aes(x = flipper_length_mm, fill = species)) +
+  geom_histogram() +
+  theme_bw() + 
+  scale_fill_viridis_d(option='magma') + # try adding option = "A", "C", "E", etc. These also have names! See documentation.
+  labs(title = "Palmer Penguins, Distribution of Flipper Length",
+       subtitle = "3 penguin species observed on three islands in the Palmer Archipelago, Antarctica",
+       x = "Flipper Length (mm)",
+       y = "Number of Penguins")
+```
+
+Let's investigate flipper length with another type of data viz: a boxplot!
+
+```{r, message=FALSE}
+ggplot(data = penguins_data, aes(x = species, y = flipper_length_mm, fill = species)) +
+  geom_boxplot()
+```
+
+Again, let's customize!
+
+```{r, message=FALSE}
+ggplot(data = penguins_data, aes(x = species, y = flipper_length_mm, fill = species)) +
+  geom_boxplot() +
+  geom_jitter(size = 0.5) + # adding some datapoints and jittering them
+  theme_bw() + # sets overall plot theme (think background, axes, bounding box)
+  scale_fill_viridis_d() +
+  labs(title = "Palmer Penguins, Distribution of Flipper Length",
+       subtitle = "3 penguin species observed on three islands in the Palmer Archipelago, Antarctica",
+       x = "",
+       y = "flipper length (mm)") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") +
+  coord_flip()
+
+```
+
+Awesome! Let's take a look at flipper length and it's relationship to body mass
+
+```{r, message=FALSE}
+ggplot(data = penguins_data, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point()
+```
+
+Cool! Let's add species to this plot. What about island?
+
+```{r, message=FALSE}
+ggplot(data = penguins_data, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+  geom_point()
+  
+```
+
+## Exercise 3
+
+-   Part 1
+
+    -   In the code chunk below create a **histogram** with `culmen_depth_mm` on the x axis and `color` by `species` using the dataframe *penguins_data*. Give the plot the theme: `theme_bw()`. Assign a color palette with `scale_fill_viridis_d()`. Give the plot a title, subtitile and custom x and y axis titles.
+
+```{r, message=FALSE}
+ ggplot(data = penguins_data, aes(x = flipper_length_mm, y = body_mass_g, color = species, shape = island)) +
+  geom_point()
+```
+
+-   Part 2
+
+    -   In the code chunk below create a **scatterplot** with `culmen_depth_mm` on the x axis, `body_mass_g` on the y axis, and `color` by `species` using the dataframe *penguins_data*. Give the plot the theme: `theme_bw()`. Assign a color palette with `scale_fill_viridis_d(option = "mako")`. Give the plot a title, subtitile and custom x and y axis titles.
+
+```{r, message=FALSE}
+ggplot(data = penguins_data, aes(x = culmen_depth_mm, y = body_mass_g, color = species, shape = island)) +
+  geom_point() + theme_bw() + scale_fill_viridis_d(option = "mako") + labs(title = "Culmen depth to body mass",
+   subtitle = "mass by island species",                                              x = "culmen depth",
+   y = "body mass")
+```
+
+-   Part 3
+
+    -   This is a preview to future classwork, but I have confidence you can do this now! Try to make an **interactive plot** using `plotly`. Here are the steps:
+
+        -   Choose any plot from class today. The more detailed/robust, the better
+
+        -   Paste the code for that plot below and assign the plot a name
+
+        -   Run `ggplotly(plot_name)` and explore! Edit `plot_name` accordingly
+
+```{r, message=FALSE}
+ggplotly(plot_name = vlads_plot)
+
+ggplot(data = penguins_data, aes(x = culmen_depth_mm, y = body_mass_g, color = species, shape = island)) +
+  geom_point() + theme_bw() + scale_fill_viridis_d(option = "mako") + labs(title = "Culmen depth to body mass",
+   subtitle = "mass by island species",                                              x = "culmen depth",
+   y = "body mass")
+```
+
+## Push to GitHub!
+
+Remember the steps? Save, stage, commit, and push!
+
+A quick note: I check work between classes to make sure everyone is able to follow along and not encounter issues. If you ever have questions for me, feel free to type them directly into your qmd file, and I'll see it on GitHub! Just make sure it's clear (flag it somehow by using my name

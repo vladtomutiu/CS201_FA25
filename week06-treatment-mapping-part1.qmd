@@ -1,0 +1,198 @@
+---
+title: "Treatment Mapping"
+author: "Amber Camp" 
+date: "`r Sys.Date()`"
+format: pdf
+editor: visual
+---
+
+## Load Libraries
+
+If you don't have the below packages, run the relevant lines here:
+
+```{r}
+install.packages("arrow")
+install.packages("sf")
+install.packages("remotes") # used to install packages from github
+remotes::install_github("UrbanInstitute/urbnmapr")
+install.packages("naniar")
+install.packages("ggiraph")
+```
+
+Load libraries (all of them).
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(here)
+library(janitor) 
+library(arrow) # lets us read/write parquet and feather files
+library(sf) # "simple features" for spatial data
+library(urbnmapr) # access to US state/country shapefiles for mapping
+library(naniar) # tools for exploring and visualizing missing data
+library(ggiraph) # makes ggplot charts interactive
+options(scipen = 99) # turns off scientific notation
+```
+
+## Today's Data
+
+The data we will analyze today is the Treatment Episode Data Set-Discharges (TEDS-D) Dataset from the Substance Abuse and Mental Health Services Administration (SAMHSA). The metadata can be found [here](https://www.samhsa.gov/data/system/files/media-puf-file/TEDS-D-2021-DS0001-info-codebook.pdf)
+
+This is a huge dataset! It's been compressed to a parquet file, which we can read in using `arrow`.
+
+```{r, echo=FALSE}
+teds_d <- read_parquet(here("data/teds_d_lecture.parquet"))
+
+teds_d <- teds_d %>%
+  clean_names()
+
+head(teds_d)
+```
+
+### Columns for today's class
+
+-   Frequency of use at discharge = `freq1_d`
+
+-   State = `stfips` (FIPS = *Federal Information Processing Standard)*
+
+-   Treatment Service = `services_d`
+
+-   Length of Stay = `los`
+
+-   Reason for Discharge = `reason`
+
+### NA Analysis
+
+What data is missing? Examine and visualize below with `naniar`
+
+```{r}
+miss_var_summary(teds_d)
+
+gg_miss_var(teds_d)
+
+teds_d %>%
+  slice_sample(n = 500) %>% # from dplyr
+  vis_miss() # from naniar
+```
+
+There actually is more missing data than the above would suggest... How does the documentation label missing data?
+
+```{r}
+teds_d %>% 
+  tabyl(reason) # from janitor package
+```
+
+Replace values as needed.
+
+```{r}
+teds_d[teds_d == "-9"] <- NA
+```
+
+Inspect once again.
+
+```{r}
+miss_var_summary(teds_d)
+
+teds_d %>%
+  tabyl(reason)
+```
+
+### Variable Re-coding
+
+Many of the variables are currently in a format that is not helpful for our analyses.
+
+#### Frequency of Use at Discharge
+
+Start by inspecting this variable. Next, look up the Frequency of Use at Discharge variable in the codebook (`freq1_d`)
+
+```{r}
+class(teds_d$freq1_d)
+summary(teds_d$freq1_d)
+
+teds_d <- teds_d %>%
+  mutate(freq1_d = recode(as.character(freq1_d),
+                          "1" = "no use",
+                          "2" = "some use",
+                          "3" = "daily use",
+                          .missing = "unknown"),
+         freq1_d = factor(freq1_d))
+
+teds_d %>%
+  tabyl(freq1_d)
+```
+
+#### Services
+
+Apply the relevant recoding for `services_d`
+
+```{r}
+class(teds_d$services_d)
+summary(teds_d$services_d)
+
+teds_d <- teds_d %>%
+  mutate(services_d = recode(as.character(services_d),
+                          "1" = "Detox, 24-hour, hospital inpatient",
+                          "2" = "Detox, 24-hour, free-standing residential",
+                          "3" = "Rehab/residential, hospital (non-detox) ",
+                          "4" = "Rehab/residential, short term (30 days or fewer)",
+                          "5" = "Rehab/residential, long term (more than 30 days)",
+                          "6" = "Ambulatory, intensive outpatient",
+                          "7" = "Ambulatory, non-intensive outpatient",
+                          "8" = "Ambulatory, detoxification",
+  .missing = "unknown"),
+         freq1_d = factor(freq1_d))
+
+teds_d %>%
+  tabyl(services_d)
+```
+
+#### Reason
+
+Apply the relevant recoding for the Reason for Discharge variable.
+
+```{r}
+class(teds_d$reason) 
+
+teds_d <- teds_d %>%
+  mutate(reason = recode(as.character(reason),
+                          "1" = "Treatment completed",
+                          "2" = "Dropped out of treatment",
+                          "3" = "Terminated by facility",
+                          "4" = "Transferred to another treatment program or facility",
+                          "5" = "Incarcerated",
+                          "6" = "Death",
+                          "7" = "Other",
+                          
+  .missing = "unknown"),
+         reason = factor(reason))
+
+teds_d %>%
+  tabyl(reason)
+
+```
+
+## Quick Plotting Exercise
+
+Create three basic visualizations using `ggplot2` and the variables you recoded above.
+
+```{r}
+ggplot(teds_d, aes(x = reason)) +
+  geom_bar()
+
+ggplot(teds_d, aes(x = services_d)) +
+  geom_bar()
+
+ggplot(teds_d, aes(x = freq1_d)) +
+  geom_bar()
+```
+
+## Do before Wednesday's Class
+
+### Save your new dataframe
+
+You've put a lot of work into cleaning up this dataframe! Once you're done recoding everything, write to a new parquet file so that you can simply read it in on Wednesday!
+
+Have this done before class on Wednesday.
+
+```{r}
+write_parquet(teds_d, here("data/teds_d_clean.parquet"))
+```

@@ -1,0 +1,310 @@
+---
+title: "Exploratory Data Analysis, part 2"
+author: "Amber Camp"
+date: "`r Sys.Date()`"
+format: html
+editor: visual
+---
+
+# Exploratory Data Analysis Part 2
+
+Continuing on from Part 1. Start by loading libraries and reading in data, as needed
+
+## Libraries
+
+```{r, message=FALSE}
+library(tidyverse) # ggplot2 is part of tidyverse!
+library(here)
+library(janitor)
+```
+
+## Data
+
+Read in the data and clean the column headers using janitor.
+
+```{r, message=FALSE}
+pokedata <- read_csv(here("data/Pokemon.csv"))
+
+pokedata <- pokedata %>%
+  clean_names()
+```
+
+Remember we have some data that we want to treat as factor, so let's go ahead and convert them now. This is carried over from last class
+
+```{r, message=FALSE, results='hide'}
+#skim_data_before <- skimr::skim(pokedata)
+
+pokedata$number <- as.factor(pokedata$number)
+pokedata$type_1 <- as.factor(pokedata$type_1)
+pokedata$name <- as.factor(pokedata$name)
+pokedata$type_2 <- as.factor(pokedata$type_2)
+pokedata$generation <- as.factor(pokedata$generation)
+
+#skim_data <- skimr::skim(pokedata)
+```
+
+By the way, if you want to save this as a new csv, just run the below. I'm going to leave it optional for now.
+
+```{r}
+# write_csv(pokedata, "data/pokemon_cleaned.csv")
+```
+
+## Boxplot time! (Extra credit)
+
+How do we read boxplots? Also called box and whisker plot/diagram.
+
+-   Middle line: median (Sadie)
+
+-   Box: the middle 50% of data (25%-75%). IQR inter-quartile range
+
+-   Whiskers: Grace & Sano & Karl
+
+-   Dots: basically outliers (Johnny)
+
+```{r, message=FALSE}
+ggplot(pokedata, aes(y = hp)) +
+  geom_boxplot()
+
+ggplot(pokedata, aes(x = type_1, y = hp)) +
+  geom_boxplot()
+
+ggplot(pokedata, aes(x = fct_reorder(type_1, hp, median), y = hp)) +
+  geom_boxplot()
+
+ggplot(pokedata, aes(x = fct_reorder(type_1, hp, median), y = hp)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.2, alpha = 0.5) # try jitter, width of 0.2
+
+ggplot(pokedata, aes(x = type_1, y = hp)) +
+  geom_boxplot() +
+  facet_wrap(~generation) + # try facet_grid()
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) # note code to rotate labels
+```
+
+## Difference between `|>` and `%>%`
+
+-   `|>` is also called native pipe or base R pipe
+
+-   `%>%` is also called `dplyr` pipe, `magrittr` pipe, pipe operator
+
+-   Do they work differently? No
+
+## Tip!
+
+You can pipe `dplyr` and `ggplot2` together!
+
+```{r, message=FALSE}
+# try a bar plot of type_2 first. see all the NAs?
+ggplot(pokedata, aes(x = type_2)) +
+  geom_bar()
+
+# filter out NA values in type_2 and pipe directly to ggplot
+pokedata %>% 
+  filter(!is.na(type_2)) %>%  # how would we filter?
+  ggplot(aes(x = type_2)) + # ggplot uses + as a layer operator
+  geom_bar()
+
+# another way to do this:
+ggplot(na.omit(pokedata), aes(x = type_2)) +
+  geom_bar()
+
+```
+
+## Challenge #1
+
+Create a faceted bar plot that displays `type_1` and `type_2` information.
+
+Options:
+
+-   Can you add color?
+
+-   Can you rotate the labels on the x-axis? Make the font smaller?
+
+```{r}
+ggplot(data = na.omit(pokedata), aes(x = type_2, fill = generation)) +
+  geom_bar() +
+  facet_wrap(~type_1) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 7))
+```
+
+## Covariation
+
+Covariation refers to the tendency of two or more variables to change together in a correlated manner. A good way to inspect covariation is through visualization.
+
+Below are plots using `geom_freqpoly()`, a function in that creates a frequency polygon, which is a line graph used to represent the distribution of a continuous variable.
+
+Unlike histograms, which use bars, frequency polygons use lines, making it easier to visualize the shape of the distribution and compare multiple groups on the same plot. You can also overlay multiple frequency polygons to compare the distributions of different groups or categories, using different colors or line types.
+
+Displaying counts is useful when you want to see absolute frequencies. Displaying density is helpful when you want to compare distributions across groups that don't have the same sample size. In the density display, the `y-axis` is scaled so that the area under the curve equals `1`.
+
+**Counts** show the raw number of observations in each bin/category. This is useful if you care about absolute frequencies.
+
+**Density** rescales those counts so the total area under the curve is 1. This standardization puts different groups on the same scale, which is is helpful when you want to compare distributions across groups that don't have the same sample size (you can compare their *shapes* for the distribution).
+
+```{r, message=FALSE}
+ggplot(pokedata, aes(x = defense)) + # this one displays counts
+  geom_freqpoly(aes(color = generation), binwidth = 15, linewidth = 0.75)
+
+ggplot(pokedata, aes(x = defense, y = after_stat(density))) + # this one displays density
+  geom_freqpoly(aes(color = generation), binwidth = 15, linewidth = 0.75)
+```
+
+## `diamonds` data
+
+Here is the same sort of example as above, this time using data from `diamonds`, which is already part of your `ggplot2` package. Note that we can call upon and access the data without reading it in first!
+
+```{r, message=FALSE}
+ggplot(diamonds, aes(x = price)) + 
+  geom_freqpoly(aes(color = cut), binwidth = 500, linewidth = 0.75)
+
+ggplot(diamonds, aes(x = price, y = after_stat(density))) + 
+  geom_freqpoly(aes(color = cut), binwidth = 500, linewidth = 0.75)
+
+# and a boxplot for good measure
+ggplot(diamonds, aes(x = cut, y = price)) +
+  geom_boxplot()
+
+```
+
+These data show that, contrary to expectations, better quality diamonds are perhaps generally cheaper than lower quality diamonds. This doesn't make sense. How do we dig deeper?
+
+First, let's look at the different variables in the data
+
+```{r, message=FALSE}
+head(diamonds)
+summary(diamonds)
+?diamonds
+```
+
+Looks like there are other factors that could affect `price` – not just `cut`. Let's start with a basic scatterplot looking at `price` vs. `carat`.
+
+```{r, message=FALSE}
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point(alpha = 0.05) # try making the points transparent to 0.05
+```
+
+We can see the general trends, but it's a bit difficult to really see what is going on. Back to boxplots!
+
+## Boxplots for EDA
+
+First, we'll try making a boxplot with `x = carat` and `y = price`
+
+```{r, message=FALSE}
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_boxplot()
+```
+
+It doesn't work that way! Boxplots are designed for categorical (factor) variables on the x-axis, and `carat` is continuous.
+
+But if you want to compare `price` across *ranges* of `carat`, you can do that by binning `carat` into increments of 1, 0.5, and 0.1 carats:
+
+```{r, message=FALSE}
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_boxplot(aes(group = cut_width(carat, 1)))
+
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_boxplot(aes(group = cut_width(carat, 0.5)))
+
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_boxplot(aes(group = cut_width(carat, 0.1)))
+
+```
+
+We can see the general trend that an increase in diamond `carat` size results in an increase in `price`, with some outliers. We are getting closer to an answer. Let's see what `color` and `clarity` help us understand.
+
+```{r, message=FALSE}
+ggplot(diamonds, aes(x = color, y = price)) +
+  geom_boxplot()
+# automatically plots the factor color in alphabetical order.
+
+# FYI, color D (colorless) is considered better quality than color J (near colorless, more yellow), so let's reverse the order
+diamonds %>%
+  mutate(color = fct_rev(color)) %>% # fct_rev(color) reverses the order of factors
+  ggplot(aes(x = color, y = price)) +
+  geom_boxplot()
+```
+
+Is there a relationship between `color` and `price`?
+
+Let's try `clarity` (these are already in the "right" order).
+
+```{r, message=FALSE}
+ggplot(data = diamonds, aes(x = clarity, y = price)) +
+  geom_boxplot()
+```
+
+What is the relationship here?
+
+For `color` and `clarity`, is there more visible variation or covariation?
+
+Between `color`, `clarity`, and `carat`, which do you think is the best predictor of `price`?\
+(If you took DS-303 last semester, you might even try a quick linear regression to check!)
+
+```{r}
+library(lme4)
+model <- lm(price ~ cut + carat +clarity + color, diamonds)
+summary(model)
+
+```
+
+Let's not forget about `cut`! Is there a relationship between `cut` and `carat`? `cut` is categorical and `carat` is numeric, and we can plot the two together easily
+
+```{r, message=FALSE}
+ggplot(diamonds, aes(x = cut, y = carat)) +
+  geom_boxplot()
+
+ggplot(diamonds, aes(x = cut, y = carat)) + # this is a count plot
+  geom_count()
+
+ggplot(diamonds, aes(x = cut, y = carat)) + # this is a violin plot
+  geom_violin()
+```
+
+## Challenge #2:
+
+### What do you think?
+
+#### Observations:
+
+-   Where do we see a lot of variability?
+
+    Answer: We see a lot of variability in price as carat sizes grow.
+
+-   Is there a relationship between carat and cut?
+
+    Answer: The better the cut the lower the carat amount.
+
+-   Which category has the largest carat diamonds?
+
+    Answer: The fair cut has the largest median carat diamonds
+
+#### Conclusions:
+
+The factor with the most influence on price is carat. There may be a trade-off between `carat` and `cut`. Perhaps larger carat diamonds can be profitably sold even with a low quality cut, for example.
+
+We will stop here!
+
+### Reflection
+
+Which visualization type today felt most useful for you in spotting covariation, and why?
+
+Answer:
+
+## For Fun
+
+If you wanted to continue investigating, here are a couple more visualizations:
+
+```{r, message=FALSE}
+# this is an example of a count plot with two categorical variables
+ggplot(diamonds, aes(x = cut, y = color)) +
+  geom_count()
+
+# this is called a tile plot or heatmap
+diamonds %>% 
+  count(color, cut) %>%  
+  mutate(color = fct_rev(color)) %>%
+  ggplot(aes(x = color, y = cut)) +
+  geom_tile(aes(fill = n))
+
+
+```
