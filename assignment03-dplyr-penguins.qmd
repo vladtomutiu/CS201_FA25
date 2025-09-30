@@ -1,0 +1,221 @@
+---
+title: "Assignment 3: Wrangling penguins with dplyr"
+subtitle: "STUDENT NAME"
+author: "Amber Camp"
+date: "9/16/24"
+format: html
+editor: visual
+---
+
+![](https://allisonhorst.github.io/palmerpenguins/logo.png){width="10%"} ![](https://allisonhorst.shinyapps.io/dplyr-learnr/_w_85e0dbddadc74d638dede947bd3ea7e0/images/dplyr_hex.png){width="10%"}
+
+Welcome to your first real coding assignment in this class! Consider it an achievement making it to this first milestone :)
+
+`dplyr` is one package in the `tidyverse`. It gives us multiple functions that make it easier to work with data. These include manipulation/transformation functions like selecting specific columns, deciding which rows to keep based on whether or not they match our conditions, and finding summary statistics for different variables and groups. Sometimes we call these steps part of “data wrangling.”
+
+Use this assignment as an opportunity to practice applying `dplyr` for data manipulation/transformation, and also to showcase your mastery. These `dplyr` functions will be a foundation to a lot of future exploration in class.
+
+## Load packages
+
+The usual suspects
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse) # dplyr is contained within tidyverse
+library(here)
+library(janitor)
+```
+
+## Read in your data
+
+These penguins are probably becoming familiar at this point!
+
+```{r, message=FALSE, warning=FALSE}
+penguins <- read_csv(here("data/penguins_lter.csv")) # read in data
+
+penguins <- penguins %>% # clean up the names
+  clean_names()
+
+```
+
+# Instructions
+
+Visit Allison Horst's very helpful tutorial on `dplyr` here: <https://allisonhorst.shinyapps.io/dplyr-learnr/>
+
+Your job will be to read through each page in the navigation menu on the left side, learn about the different functions, and practice them. Then, apply what you learned in the code chunks below.
+
+Your first exercise (below) starts with "3. `filter()`." All questions are worth 0.5 points, except #9, which is worth 1 point.
+
+Estimated time commitment: 90 minutes
+
+## 3. `filter()`
+
+Use `filter()` to create a subset from `penguins` that only contains female penguins with a culmen length (bill length) greater than or equal to 39 millimeters, and only those that live on Dream or Torgerson islands.
+
+Don't forget to assign to a new object name. (I'm just going to call mine `filter`)
+
+Hints: You can always check your work using `unique()`. It'll tell you the unique values that exist in a specified column, and will also help you identify the correct spelling
+
+```{r, messages=FALSE}
+penguins_data %>%
+
+filter(culmen_length_mm >= 39, island == "Dream" | island == "Torgersen")
+
+
+```
+
+## 4. `select()`
+
+Starting with the `penguins` data, keep all columns except `comments`. You should have 16 total columns/variables in the end.
+
+Assign this to a new object name so that you do not overwrite the original data!
+
+```{r, message=FALSE, warning=FALSE}
+assignment3_penguins_data <- penguins_data %>%
+  select(-comments)
+
+```
+
+## 5. `relocate()`
+
+Starting with `penguins`, move the `individual_id` variable to the third column position, following `study_name` and `sample_number`. Use `view()` to see if it worked!
+
+Don't forget to assign to a new object name!
+
+```{r, message=FALSE, warning=FALSE}
+assignment3_penguins_data %>%
+  relocate(individual_id, .after = sample_number)
+
+view(assignment3_penguins_data)
+
+```
+
+## 6. `rename()`
+
+Starting with `penguins`, convert the `island` column to `island_name`. Use `view()` to check it worked!
+
+Don't forget to assign to a new object name.
+
+```{r, message=FALSE, warning=FALSE}
+assignment3_penguins_data %>%
+  rename(island_name = island)
+
+view(assignment3_penguins_data)
+
+```
+
+## 7. `mutate()`
+
+Copy `penguins` to a new object called `mutate` and add a column that displays flipper length as kilometers. Call that new column `flippometers`.
+
+```{r, message=FALSE, warning=FALSE}
+assignment3_penguins_data %>%
+  mutate(flippometers = flipper_length_mm / 1000)
+
+```
+
+## 8. `group_by() %>% summarize()`
+
+You've done this a couple times in class already!
+
+Create a new dataframe called `number8`. Take `penguins`, group the data by island and species, then create a summary table containing the mean culmen depth (call this `culmen_depth_mean`) and mean culmen length (call this `culmen_length_mean`) for each group.
+
+Apply `na.rm` as needed.
+
+```{r, message=FALSE, warning=FALSE}
+data(assignment3_penguins_data)
+  number8 <- assignment3_penguins_data %>%
+  
+  group_by(island, species) %>%
+  summarize(culmen_depth_mean = mean(culmen_depth_mm, na.rm = TRUE),culmen_length_mean = sd(culmen_length_mm, na.rm = TRUE))
+  
+
+```
+
+## 9. `across()`
+
+Starting with `penguins`, only keep observations for Biscoe island, group by `species`, then use `across()` to find the maximum value for any numeric variable
+
+```{r, message=FALSE, warning=FALSE}
+assignment3_penguins_data %>%
+  filter(island == "Biscoe") %>%
+  group_by(species) %>%
+  summarize(across(where(is.numeric), max, na.rm = TRUE))
+
+```
+
+## 10. `count()`
+
+Starting with `penguins`, create a new object called `count` that filters out all `sex` values other than `MALE` and `FEMALE`. Then, in the same piped function, display the count of all penguins by `island`, `species`, and `sex`.
+
+```{r, message=FALSE, warning=FALSE}
+data(assignment3_penguins_data)
+  count <- assignment3_penguins_data %>%
+  filter(sex %in% c("MALE", "FEMALE")) %>%
+  group_by(island, species, sex)
+
+```
+
+## 11. `case_when()`
+
+Create a new object called `case_when` from `penguins` and add a new column called `size` that contains:
+
+-   "big" when `body_mass_g` is greater than or equal to 4050
+
+-   "small" when `body_mass_g` is less than 4050
+
+Use `summary(as.factor(case_when$size))` to check your work
+
+```{r, message=FALSE, warning=FALSE}
+case_when <- assignment3_penguins_data %>%
+  mutate(size = case_when(
+    body_mass_g >= 4050 ~ "big",
+    body_mass_g < 4050 ~ "small"
+  ))
+  summary(as.factor(case_when$size))
+
+```
+
+## 12. Final Boss 🐧 (up to 2.5 pts extra credit)
+
+#### OPTIONAL!!
+
+This is meant to *stretch* you, not *stress* you!
+
+You’ve made it to the Final Boss 🐧! This challenge is meant to stretch your skills and combine what you’ve learned. Take it one step at a time.
+
+Create a new object called `final_boss` that satisfies all of the following:
+
+1.  Start with the `penguins` dataset.
+
+2.  Filter to keep only *female* penguins with a known `flipper_length_mm` (not `NA`) that are either on Dream or Biscoeisland.
+
+3.  Select just these columns: `species`, `island`, `flipper_length_mm`, and `body_mass_g`.
+
+4.  Mutate a new variable called `flipper_rank`:
+
+    -   If `flipper_length_mm` is less than 190, assign `"short"`,
+
+    -   If `flipper_length_mm` is between 190 and 210, assign `"medium"`,
+
+    -   If greater than 210, assign `"long"`.
+
+5.  Group by `species`, `island`, and `flipper_rank`, and summarize the *average body mass* (name this column `avg_mass_g`), rounded to the nearest whole number.
+
+#### Hints:
+
+-   Use `case_when()` inside `mutate()` for flipper ranking.
+
+-   Use `round()` inside `summarize()` to round your final result.
+
+-   Your `final_boss` dataframe should be 8 observations × 4 variables.
+
+-   Use comments (`#`) to help you think through each step.
+
+-   Use `print(final_boss` when you're done.
+
+```{r, message=FALSE, warning=FALSE}
+
+
+```
+
+# Push to GitHub AND submit link on Canvas!!
