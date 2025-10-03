@@ -1,0 +1,142 @@
+---
+title: "Assignment 4: Exploratory Data Analysis"
+author: "Amber Camp"
+date: "`r Sys.Date()`"
+format: html
+editor: visual
+---
+
+## Overview
+
+Due: **Sunday, 9/28 11:59pm**
+
+In this assignment, you will practice Exploratory Data Analysis (EDA) by making plots from a **Kaggle dataset of your choice**.
+
+You will submit **at least 4 different plot types**, with short written interpretations for each.
+
+Part 1 is worth a total of 1 point, and Part 2 is worth 4 points (1 point for each plot & interpretation).
+
+## Part 1: Get Your Data
+
+1.  Go to [Kaggle Datasets](https://www.kaggle.com/datasets), create an account, and choose a dataset that interests you. Ensure your data has:
+    1.  At least 4 variables
+    2.  At least one categorical and one continuous variable
+    3.  I recommend data that contains at least 50-100 observations
+    4.  Tip: Open the CSV on Kaggle first and skim the columns to check that it meets these requirements
+2.  Download the dataset as a CSV file.
+3.  Place the CSV in your class R project data folder.
+4.  Read it into R with `read_csv()`.
+
+```{r, message=FALSE}
+library(tidyverse)
+
+mydata <- read_csv("data/Soccer_Football Clubs Ranking in june.csv")
+
+```
+
+### Describe your data
+
+Data author: Ram Jas
+
+Link: <https://www.kaggle.com/datasets/ramjasmaurya/footballsoccer-clubs-ranking?resource=download>
+
+Description: Dataset shows the rankings of the top soccer clubs in the world
+
+### Preview your data
+
+Use some of the strategies you've learned in this class or picked up elsewhere to summarize and quickly explore your data.
+
+```{r}
+summary(mydata)
+```
+
+### Summary stats
+
+Before you make plots, you must also:
+
+-   Show basic summaries of your dataset, including:
+
+    -   `count()` for categorical variables (to see category frequencies)
+
+    -   `mean()`, `median()`, `sd()`, `min()`, `max()` for at least one numeric variable
+
+```{r}
+mydata <- mydata %>% 
+  clean_names()
+  
+count(mydata, club_name)
+
+mydata %>%
+summarise(
+  mean_value = mean(point_score, na.rm = TRUE),
+    median_value = median(point_score, na.rm = TRUE),
+    sd_value = sd(point_score, na.rm = TRUE),
+    min_value = min(point_score, na.rm = TRUE),
+    max_value = max(point_score, na.rm = TRUE)
+  )
+
+```
+
+Write 2–3 sentences here: What do the category counts tell you? What does the numeric summary show about spread, center, or outliers?
+
+The category count is all the names of the soccer clubs in alphabetical order, showing how many there are as well. The numeric summary shows the average amount of points the team gets, median score, their standard deviation and the min/max. This scoring system means there will not be many outliers or extreme values, although scores at the top may be more spread out and increase rapidly because you gain many more points the better you are as a team compared to lower level teams. It is similar but not as extreme for the lower level teams.
+
+## Part 2:
+
+Create **at least 4 plots**, each of a different type. At least one of your four plots must use different variables than the others.
+
+Each plot should have:
+
+-   A title and labeled axes
+
+-   A short interpretation (2-3 sentences) underneath
+
+Use the EDA Part 3 notes as your reference. Since this is an EDA assignment, your plots can be plain, but consider adding colors, themes, or interactivity for interpretability and visual appeal if you know how.
+
+### Plot 1
+
+```{r}
+# insert code here
+ggplot(mydata, aes(x = ranking, y = point_score)) +
+  geom_point() +
+  labs(title = "club rankings and their points")
+```
+
+Interpretation: The teams at the top of the world rankings have exponential growth in points compared to other teams because winning trophies likely adds to your points a lot more. Similarly their is an exponential decrease for teams that likely won almost no games and got relegated.
+
+### Plot 2
+
+```{r}
+# insert code here
+ggplot(mydata, aes(x = ranking, y = point_score)) +
+  geom_line() +
+  labs(title = "club rankings and their points")
+```
+
+Interpretation: The line graph shows the exact same details as the scatter plot, but it looks a little cleaner since there is a never ending line. I think this method of graphing is likely nicer to see the trends for the clubs rankings and their scores, but probably harder to look at specific teams if the graph was interactive and you can press on each team and see information on them.
+
+### Plot 3
+
+```{r}
+# insert code here
+ggplot(mydata, aes(y = point_score)) +
+  geom_boxplot() +
+  labs(title = "boxplot of club team points scored")
+```
+
+Interpretation: The box plot can be used to interpret and visualize the distribution of the rankings and the scores each team has gained in points. The box plot allows me to see where the minimum, first quartile, median, third quartile, and maximums are.
+
+### Plot 4
+
+```{r}
+# insert code here
+ggplot(mydata, aes(x = symbol_change, y = x1_year_change)) +
+  geom_violin() +
+  labs(title = "violin plots of club team points change over a year period")
+```
+
+Interpretation: The violin plot shows the density of values which helps show in this plot how many teams lost and gained points and how many teams lost specific amounts of points. For example, here you can clearly see a lot of teams lost points but very little, with some teams losing a significant amount of points (close to 1500) but very little amount of teams did this. It also shows the teams that gained points gained in a slightly different ways, with the more points you gained, the less amount of teams gaining those points.
+
+## Push to GitHub to Submit!
+
+Assignment is due Sunday 9/28 at 11:59 pm.
