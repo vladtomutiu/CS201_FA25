@@ -1,0 +1,234 @@
+---
+title: "Treatment Mapping, part 2"
+author: "Amber Camp" 
+date: "`r Sys.Date()`"
+format: html
+editor: visual
+---
+
+## Load Libraries
+
+If you don't have the below packages, run the relevant lines here:
+
+```{r}
+# install.packages("tidyverse")
+# install.packages("here")
+# install.packages("janitor")
+# install.packages("arrow")
+# install.packages("sf")
+# install.packages("remotes") # used to install packages from github
+# remotes::install_github("UrbanInstitute/urbnmapr") # use this to install urbnmapr
+# install.packages("naniar")
+# install.packages("ggiraph")
+```
+
+Load libraries (all of them).
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(here)
+library(janitor) 
+library(arrow) # lets us read/write parquet and feather files
+library(sf) # "simple features" for spatial data
+library(urbnmapr) # access to US state/country shapefiles for mapping
+library(naniar) # tools for exploring and visualizing missing data
+library(ggiraph) # makes ggplot charts interactive
+options(scipen = 99) # turns off scientific notation
+```
+
+## Today's Data
+
+Read in the data you cleaned on Monday!
+
+As a reminder, the data is from the Treatment Episode Data Set-Discharges (TEDS-D) Dataset from the Substance Abuse and Mental Health Services Administration (SAMHSA). The metadata codebook can be found [here](https://www.samhsa.gov/data/system/files/media-puf-file/TEDS-D-2021-DS0001-info-codebook.pdf)
+
+```{r, echo=FALSE}
+teds_d <- read_parquet(here("data/teds_d_clean.parquet"))
+```
+
+### Columns for this data
+
+-   Frequency of use at discharge = `freq1_d`
+
+-   State = `stfips` (FIPS = *Federal Information Processing Standard)*
+
+-   Treatment Service = `services_d`
+
+-   Length of Stay = `los`
+
+-   Reason for Discharge = `reason`
+
+## Mapping the Data!
+
+Get ready for some more "word problems." A big part of this class is translating "regular" language to code-based solutions, and vice-versa.
+
+Our first goal is to map the *percentage of complete treatments by state.*
+
+We'll break it down. First, let's calculate the percentage of completed treatments by state.
+
+```{r}
+percent_completed_by_state <- teds_d %>%
+  group_by(stfips) %>% # reminder: stfips is the state code
+  summarize(total_cases = n(), # this grabs the total number of obvs
+    completed_cases = sum(reason == "Treatment completed", na.rm = TRUE)) %>% # change your "reason" code as needed
+  mutate(percentage_completed = (completed_cases / total_cases) * 100) # basic math :)
+
+summary(percent_completed_by_state)
+```
+
+Next, we need to bring in some mapping data using `urbnmapr`. Notice there is no map data in our current dataset, so we wouldn't be able to create maps without the next few steps.
+
+```{r}
+states_map <- get_urbn_map(map = "states", sf = TRUE)
+head(states_map, 10)
+```
+
+Next, we will want to combine the `states_map` and `percent_completed_by_state` dataframes. In order to do that, we need to find something they have in common – an `index`.
+
+That index will be "stfips". But what do we notice that's different between the columns that contain the "stfips" information in `percent_completed_by_state` and `states_map`? (two differences)
+
+Answer: Variable names are different, stfips and state_fips named differently for same thing. state_fips has values 01, 02, etc. while stfips has 1, 2, 3, etc.
+
+```{r}
+percent_completed_by_state <- percent_completed_by_state %>%
+  mutate(state_fips = sprintf("%02d", stfips))
+```
+
+### Joining data
+
+Here is a \~\*magical\*\~ concept in data science: ***joins***! They let us connect information that lives in different tables, like linking student names in one list with their grades in another... or linking treatment discharge data with state mapping data based on an index of `state_fips`!
+
+This is both a useful **concept** (relating tables through keys) and a useful **skill** (choosing and applying the right type of join), carried out in R with functions like `left_join()`, `right_join()`, or `full_join()` below.
+
+```{r}
+percent_completed_by_state_map <- full_join(percent_completed_by_state,
+                          states_map,
+                          by = "state_fips") # remember the index we prepared above?
+```
+
+Success! This was easily done with a single line of code—but don't underestimate the power of what you just did, and how precise things needed to be for you to make it work.
+
+### Plotting the Map
+
+```{r}
+ggplot(percent_completed_by_state_map) +
+  geom_sf(mapping = aes(geometry = geometry, fill = percentage_completed),
+          color = "#ffffff", size = 0.25) +
+  labs(fill = "% of Completed Treatment Episodes") +
+   coord_sf(datum = NA) +
+   theme_minimal() 
+```
+
+Make it interactive with `ggiraph`. This package works well with `ggplot2`, and you can also use `plotly`.
+
+```{r}
+completed_treatment_map_int <- ggplot(percent_completed_by_state_map) +
+  geom_sf_interactive(
+    mapping = aes(geometry = geometry,
+      fill = percentage_completed,
+      tooltip = paste("State FIPS:", stfips, 
+                      "<br>Completed:", percentage_completed, "%")),
+    color = "#ffffff",
+    size = 0.25) +
+  labs(fill = "% of Completed Treatment Episodes") +
+  coord_sf(datum = NA) +
+  theme_minimal()
+
+
+# Use `girafe` to render the interactive plot
+girafe(ggobj = completed_treatment_map_int) # check your spelling!
+
+```
+
+### Clean up the tooltip
+
+You can customize the tooltip (to a degree). Try rounding that completed % value to 2 decimal points and add state name (because who just knows the codes)?
+
+```{r}
+completed_treatment_map_int <- ggplot(percent_completed_by_state_map) +
+  geom_sf_interactive(
+    mapping = aes(geometry = geometry,
+      fill = percentage_completed,
+      tooltip = paste("State:", state_abbv,
+                      "<br>FIPS:", stfips,
+                      "<br>Completed:", round(percentage_completed,2), "%")),
+    color = "#ffffff",
+    size = 0.25) +
+  labs(fill = "% of Completed Treatment Episodes") +
+  coord_sf(datum = NA) +
+  theme_minimal()
+
+
+# Use `girafe` to render the interactive plot
+girafe(ggobj = completed_treatment_map_int) # check your spelling!
+
+
+```
+
+### Clean up the color binning
+
+Adding color bins, based on manual/equal interval breaks. (There are more advanced binning techniques, likes quantiles, Jenks natural breaks, standard deviations, etc.)
+
+```{r}
+percent_completed_by_state_map <- percent_completed_by_state_map %>% 
+  mutate(percentage_bin = cut(percentage_completed, breaks=c(0, 10, 20, 30, 40, 50, 60, 70, 80)), percenatge_bin = fct_explicit_na(percentage_bin, na_level = "No data"))
+
+# check out the column you just added
+head(percent_completed_by_state_map)
+
+```
+
+Now make the map!
+
+```{r}
+percent_complete_binned_int <- ggplot(percent_completed_by_state_map) +
+  geom_sf_interactive(
+    aes(geometry = geometry,
+      fill = percentage_bin,
+      tooltip = paste("State:", state_abbv,
+                      "<br>FIPS:", stfips,
+                      "<br>Completed:", percentage_completed, "%")),
+    color = "#ffffff", size = 0.25) +
+  labs(fill = "% of Completed Treatment Episodes",
+       title = "Completed Treatment Episodes by State",
+       subtitle = "TEDS-D Dataset (SAMHSA)") +
+  scale_fill_viridis_d(option = "mako", direction = -1) + # i flipped the direction of the color scale so dark = high and light = low
+  coord_sf(datum = NA) +
+  theme_minimal() +
+  theme(panel.background = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    legend.text = element_text(size = 4),
+    legend.title = element_text(size = 5),
+    strip.text = element_text(size = 4))
+
+girafe(ggobj = percent_complete_binned_int)
+```
+
+## For Friday's Class
+
+Notice anything weird with the above?? Try to figure out how to fix the problem—you'll need it for your homework. I'll show you a solution on Friday.
+
+------------------------------------------------------------------------
+
+## Package Triage
+
+This is for people who were having trouble with packages last class. There are various reasons package installation goes wrong.
+
+Try the below code chunk to install packages and triage. If you have all the packages, nothing remarkable should happen. Look out for warnings and let Amber know.
+
+```{r}
+pkgs <- c("tidyverse", "here", "janitor", "arrow",
+          "sf", "remotes", "naniar", "ggiraph")
+
+for (p in pkgs) {
+  if (!require(p, character.only = TRUE)) {
+    install.packages(p)
+  }
+}
+
+if (!require("urbnmapr")) {
+  remotes::install_github("UrbanInstitute/urbnmapr")
+}
+```
