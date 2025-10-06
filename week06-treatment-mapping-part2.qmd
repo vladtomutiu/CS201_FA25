@@ -187,7 +187,8 @@ percent_complete_binned_int <- ggplot(percent_completed_by_state_map) +
       fill = percentage_bin,
       tooltip = paste("State:", state_abbv,
                       "<br>FIPS:", stfips,
-                      "<br>Completed:", percentage_completed, "%")),
+                      "<br>Completed:", sprintf("%.2f", percentage_completed),
+                      "%")),
     color = "#ffffff", size = 0.25) +
   labs(fill = "% of Completed Treatment Episodes",
        title = "Completed Treatment Episodes by State",

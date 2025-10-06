@@ -1,0 +1,96 @@
+---
+title: "Assignment 5: Substance Abuse Treatment Mapping"
+subtitle: "STUDENT NAME"
+author: "Amber Camp"
+date: "`r Sys.Date()`"
+format: html
+editor: visual
+---
+
+## Overview
+
+Due: **Tuesday, 10/7 11:59pm**
+
+In this assignment, you will apply analytic and mapping skills on the TEDS-D dataset from SAMHSA.
+
+Refer to the following files for reference, though some of what is asked of you in this assignment will require logic beyond what was discussed here:
+
+-   week06-treatment-mapping-part1.qmd
+
+-   week06-treatment-mapping-part2.qmd
+
+Total time estimate: Two hours
+
+## Load Packages and Data
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(here)
+library(janitor) 
+library(arrow) # lets us read/write parquet and feather files
+library(sf) # "simple features" for spatial data
+library(urbnmapr) # access to US state/country shapefiles for mapping
+library(naniar) # tools for exploring and visualizing missing data
+library(ggiraph) # makes ggplot charts interactive
+options(scipen = 99) # turns off scientific notation
+
+```
+
+```{r}
+teds_d <- read_parquet(here("data/teds_d_clean.parquet"))
+```
+
+## Question 1
+
+Make an interactive map with `ggiraph` showing the percentage of completed treatments that end with no use at discharge. I am looking for a single interactive map as the final product.
+
+Hint: Break this question down into bite-sized steps, like we did in Part 2. The `freq1_d` column contains information about use at discharge. Check your denominator carefully — should it be *all cases* or *completed cases*?
+
+```{r}
+percent_complete_binned_int <- ggplot(percent_completed_by_state_map) +
+  geom_sf_interactive(
+    aes(geometry = geometry,
+      fill = percentage_bin,
+      tooltip = paste("State:", state_abbv,
+                      "<br>FIPS:", stfips,
+                      "<br>Completed:", sprintf("%.2f", percentage_completed),
+                      "%")),
+    color = "#ffffff", size = 0.25) +
+  labs(fill = "% of Completed Treatment Episodes",
+       title = "Completed Treatment Episodes by State",
+       subtitle = "TEDS-D Dataset (SAMHSA)") +
+  scale_fill_viridis_d(option = "mako", direction = -1) + # i flipped the direction of the color scale so dark = high and light = low
+  coord_sf(datum = NA) +
+  theme_minimal() +
+  theme(panel.background = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    legend.text = element_text(size = 4),
+    legend.title = element_text(size = 5),
+    strip.text = element_text(size = 4))
+
+girafe(ggobj = percent_complete_binned_int)
+```
+
+## Question 2
+
+Treatment outcomes can vary depending on the type of service patients receive and the length of stay in treatment.
+
+-   Investigate how the percentage of treatments completed and the percentage of treatments that end with no use at discharge differ when you look at service type and length of stay.
+
+-   Create at least three different visualizations to help answer this question.
+
+-   At least one visualization should focus on service type and at least one should focus on length of stay. A third visualization should compare the two.
+
+-   After making your visualizations, write a short summary (3-ish sentences) that explains the main patterns you observe. Please use full, grammatical sentences.
+
+```{r}
+
+```
+
+Summary: (write here)
+
+## Push to GitHub to Submit!
+
+Assignment is due Tuesday 10/7 at 11:59 pm.
