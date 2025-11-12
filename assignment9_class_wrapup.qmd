@@ -1,0 +1,99 @@
+---
+title: "Assignment 9: Class Wrap-up"
+format: html
+editor: visual
+author: "Amber Camp"
+date: "`r Sys.Date()`"
+---
+
+## Assignment 9: Class Wrap-up
+
+We are finally at the end of the semester! The final assignment for the class will be to summarize and share some of the things we've done so far.
+
+The plan is for everyone to be randomly paired with a tiny topic pertaining to something we've learned together this semester and then submit a code snippet to be presented in class on Wednesday, 11/12. (Think \~2 minute walkthrough)
+
+#### Libraries
+
+```{r, message=FALSE}
+library(tidyverse)
+```
+
+#### Read in the list of topics
+
+```{r, message=FALSE}
+topics <- read_csv("data/cs201_topics.csv")
+view(topics)
+
+# anything to edit?
+# topics[7, "topic"] <- "wildcard"
+```
+
+#### Read in the list of student names
+
+```{r, message=FALSE}
+names <- read_csv("data/cs201_names.csv")
+view(names)
+```
+
+#### Generate a random number in the names dataframe
+
+```{r, message=FALSE}
+names <- names %>%
+  mutate(number = sample(1:nrow(topics), nrow(names), replace = FALSE))
+
+view(names)
+```
+
+#### Join the names to the topics
+
+```{r, message=FALSE}
+assigned_topics <- names %>%
+  full_join(topics, by = "number")
+
+print(assigned_topics)
+
+write.csv(assigned_topics, "data/assignment9_assigned_topics.csv")
+
+# note that if you run the above script and randomize the names again, your outcome will be different from mine!!
+# go with the topics assigned in class and announced on Canvas!
+```
+
+### Instructions
+
+1.  Find your assigned topic. Talk to me if you reeeeeeaaaally want to do something else, or trade with someone (but let me know).
+
+2.  Prepare a code snippet that briefly (\~2) explains the topic in the code chunk below, using `penguins` data.
+
+3.  Push to GitHub **BY 10:00am** on Wednesday 11/10 (I'll need time to compile before class).
+
+4.  Come to class Wednesday and show us how it's done :)
+
+#### Extra libraries needed (if any)
+
+```{r, message=FALSE}
+library(janitor)
+
+```
+
+#### Read in penguins data
+
+```{r, message=FALSE}
+penguins <- read_csv(here("data/penguins_lter.csv")) # read in data
+
+penguins <- penguins %>% # clean up the names
+  clean_names()
+```
+
+#### {Insert topic here}
+
+```{r message=FALSE}
+penguins %>%
+    count(species, island) %>% 
+    arrange(species)
+
+penguins %>%
+    group_by(species, island) %>%
+    summarise(count = n())
+
+
+```
